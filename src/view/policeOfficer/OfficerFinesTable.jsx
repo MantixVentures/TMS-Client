@@ -29,13 +29,15 @@ const OfficerFinesTable = () => {
         
         // Fetch all fines
         const response = await policeOfficerApi.getAll();
-        console.log(response)
-        if (!response.ok) {
+        if(response){
+          console.log(response)
+          //const data = await response.json();
+          setAllFines(response.data || []);
+        }
+        if (!response) {
           throw new Error('Failed to fetch fines');
         }
 
-        const data = await response.json();
-        setAllFines(data.data || []);
       } catch (err) {
         setError(err.message);
         console.error('Error fetching fines:', err);
@@ -48,7 +50,8 @@ const OfficerFinesTable = () => {
   }, [user.token]);
 
   useEffect(() => {
-    if (allFines.length > 0) {
+    console.log("all",allFines.data);
+    if (allFines.data && allFines.data.length > 0) {
       // Get officer ID from localStorage (set during login)
       const officerId = localStorage.getItem('officerid');
       
@@ -58,7 +61,7 @@ const OfficerFinesTable = () => {
       }
 
       // Filter fines by officer I
-      const officerFines = allFines.filter(fine => fine.policeOfficerId === officerId);
+      const officerFines = allFines.data.filter(fine => fine.policeId === officerId);
       setFilteredFines(officerFines);
     }
   }, [allFines]);
@@ -88,7 +91,7 @@ const OfficerFinesTable = () => {
   }
 
   return (
-    <Box sx={{ overflowX: 'auto', mt: 2 }}>
+    <Box >
       <TableContainer component={Paper}>
         <Table>
           <TableHead>

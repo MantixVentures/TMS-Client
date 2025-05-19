@@ -1,3 +1,4 @@
+import axios from "axios";
 import { API_BASE_URL } from "../Config";
 
 export const policeOfficerApi = {
@@ -17,11 +18,16 @@ export const policeOfficerApi = {
     });
   },
   
-  getAll: async (token) => {
-    return fetch(`${API_BASE_URL}/policeIssueFine/all`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+  getAll : async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/policeIssueFine/all`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      throw error;
+    }
   },
+  
   
   update: async (id, data, token) => {
     return fetch(`${API_BASE_URL}/policeOfficers/edit/${id}`, {

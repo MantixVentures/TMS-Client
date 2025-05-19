@@ -174,7 +174,26 @@ const PoliceOfficerPage = () => {
           }}
         />
       )}
-      <OfficerFinesTable/>
+    <Box display="flex" justifyContent="center" mt={4}>
+      <Box sx={{ width: '100%', maxWidth: '1152px', px: 3 }} md={{ width: '100%', maxWidth: '1152px', px: 0 }}>
+        <Paper
+          elevation={3}
+          sx={{
+            bgcolor: '#0078AA',
+            color: '#fff',
+            p: 3,
+            borderRadius: 3,
+          }}
+        >
+          <Typography variant="h6" mb={2}>
+            My Issued Fines
+          </Typography>
+          <OfficerFinesTable />
+        </Paper>
+      </Box>
+    </Box>
+
+
     </Box>
   );
 };
