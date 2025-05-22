@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Grid,
-  Paper,
   Typography,
   CircularProgress,
   Alert,
@@ -25,14 +24,8 @@ import { HiDocumentReport } from "react-icons/hi";
 import COLORS from "../../utils/Colors";
 import axios from "axios";
 
-const DashboardCard = ({
-  icon: Icon,
-  title,
-  value,
-  subtitle,
-  color,
-  isLoading,
-}) => {
+// Dashboard Card component
+const DashboardCard = ({ icon: Icon, title, value, subtitle, color, isLoading }) => {
   return (
     <Card
       elevation={3}
@@ -55,10 +48,7 @@ const DashboardCard = ({
           {isLoading ? (
             <CircularProgress size={24} />
           ) : (
-            <Typography
-              variant="h4"
-              sx={{ fontWeight: "bold", color: COLORS.bgBlue }}
-            >
+            <Typography variant="h4" sx={{ fontWeight: "bold", color: COLORS.bgBlue }}>
               {value}
             </Typography>
           )}
@@ -74,15 +64,17 @@ const DashboardCard = ({
   );
 };
 
+// Main Dashboard Page component
 const DashboardPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [dashboardData, setDashboardData] = useState({
-    totalFines: 0,
-    todayFines: 0,
-    totalUnpaid: 0,
-    todayUnpaid: 0,
-    courtFines: 0,
+
+  const [stats, setStats] = useState({
+    total: 0,
+    today: 0,
+    unpaid: 0,
+    unpaidToday: 0,
+    courtIssued: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -91,22 +83,16 @@ const DashboardPage = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Fetch total fines
-      const totalFinesResponse = await axios.get(
-        "http://127.0.0.1:8000/example"
-      );
+      const response = await axios.get("https://tms-server-rosy.vercel.app/policeIssueFine/all");
+      const fines = response.data.data;
+      const today = new Date().toISOString().split("T")[0];
 
-      // You can add more API endpoints here for different statistics
-      // const todayFinesResponse = await axios.get("http://127.0.0.1:8000/today-fines");
-      // const unpaidResponse = await axios.get("http://127.0.0.1:8000/unpaid-fines");
-      // etc...
-
-      setDashboardData({
-        totalFines: totalFinesResponse.data[0].count,
-        todayFines: 123, // Replace with actual API data
-        totalUnpaid: 123, // Replace with actual API data
-        todayUnpaid: 123, // Replace with actual API data
-        courtFines: 123, // Replace with actual API data
+      setStats({
+        total: fines.length,
+        today: fines.filter(f => f.date === today).length,
+        unpaid: fines.filter(f => !f.isPaid).length,
+        unpaidToday: fines.filter(f => f.date === today && !f.isPaid).length,
+        courtIssued: fines.filter(f => f.type === "court").length,
       });
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
@@ -125,18 +111,19 @@ const DashboardPage = () => {
   };
 
   const handleExport = () => {
-    // Implement export functionality
-    console.log("Exporting data...");
+    const blob = new Blob([JSON.stringify(stats, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "dashboard_data.json";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <Box
-      sx={{
-        p: { xs: 2, md: 4 },
-        backgroundColor: "#f5f5f5",
-        minHeight: "100vh",
-      }}
-    >
+    <Box sx={{ p: { xs: 2, md: 4 }, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Box
@@ -186,8 +173,8 @@ const DashboardPage = () => {
         <Grid item xs={12} sm={6} md={4}>
           <DashboardCard
             icon={MdInsertChart}
-            title="Total Fines Issued"
-            value={dashboardData.totalFines}
+            title="Total Fines"
+            value={stats.total}
             subtitle="Overall"
             color={COLORS.bgBlue}
             isLoading={isLoading}
@@ -196,9 +183,9 @@ const DashboardPage = () => {
         <Grid item xs={12} sm={6} md={4}>
           <DashboardCard
             icon={HiDocumentReport}
-            title="Total Fines Issued"
-            value={dashboardData.todayFines}
-            subtitle="Today"
+            title="Fines Today"
+            value={stats.today}
+            subtitle="Issued Today"
             color="#4CAF50"
             isLoading={isLoading}
           />
@@ -206,8 +193,8 @@ const DashboardPage = () => {
         <Grid item xs={12} sm={6} md={4}>
           <DashboardCard
             icon={TbReport}
-            title="Total Unpaid Payments"
-            value={dashboardData.totalUnpaid}
+            title="Unpaid Fines"
+            value={stats.unpaid}
             subtitle="Overall"
             color="#FFC107"
             isLoading={isLoading}
@@ -216,9 +203,9 @@ const DashboardPage = () => {
         <Grid item xs={12} sm={6} md={4}>
           <DashboardCard
             icon={TbFileReport}
-            title="Total Unpaid Payments"
-            value={dashboardData.todayUnpaid}
-            subtitle="Today"
+            title="Unpaid Today"
+            value={stats.unpaidToday}
+            subtitle="Today's Unpaid"
             color="#FF9800"
             isLoading={isLoading}
           />
@@ -226,16 +213,14 @@ const DashboardPage = () => {
         <Grid item xs={12} sm={6} md={4}>
           <DashboardCard
             icon={MdReportProblem}
-            title="Court Issued Fines"
-            value={dashboardData.courtFines}
-            subtitle="Overall"
+            title="Court Fines"
+            value={stats.courtIssued}
+            subtitle="Court Issued"
             color="#F44336"
             isLoading={isLoading}
           />
         </Grid>
       </Grid>
-
-      {/* You can add more sections here like charts, tables, etc. */}
     </Box>
   );
 };

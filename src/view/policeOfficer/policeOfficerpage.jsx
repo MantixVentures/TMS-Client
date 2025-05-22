@@ -192,8 +192,6 @@ const PoliceOfficerPage = () => {
         </Paper>
       </Box>
     </Box>
-
-
     </Box>
   );
 };
