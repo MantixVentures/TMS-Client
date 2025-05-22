@@ -30,8 +30,9 @@ const CivilUser = () => {
 
   const fetchCivilUsers = async () => {
     try {
-      const response = await axios.get("https://tms-server-rosy.vercel.app/users/getall");
-      setCivilUsersData(response.data.user.newUser);
+      const response = await axios.get("https://tms-server-rosy.vercel.app/users/");
+      //alert(JSON.stringify(response.data.data));
+      setCivilUsersData(response.data.data);
     } catch (error) {
       console.error("Error fetching civil users data:", error);
     }
