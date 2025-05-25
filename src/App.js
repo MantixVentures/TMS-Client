@@ -31,6 +31,8 @@ import { AuthProvider } from './utils/AuthContext';
 import { CssBaseline } from '@mui/material';
 import { ProtectedRoute } from './utils/ProtectedRoute';
 import PoliceOfficerPage from './view/policeOfficer/policeOfficerpage';
+import PaymentSuccess from './pages/paymentPages/PaymentSuccess';
+import PaymentCancelled from './pages/paymentPages/PaymentCancelled';
 
 function App() {
   return (
@@ -78,6 +80,8 @@ function App() {
                 </ProtectedRoute>
               }>
                 <Route path='dashboard' element={<DashboardPage />} />
+                <Route path='payment-success' element={<PaymentSuccess />} />
+                <Route path='payment-cancelled' element={<PaymentCancelled />} />
                 <Route path='user/police' element={<PoliceUser />} />
                 <Route path='user/civil' element={<CivilUser />} />
                 <Route path='fines/*' element={<FinesManagement />} />
