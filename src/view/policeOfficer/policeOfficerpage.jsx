@@ -188,7 +188,7 @@ const PoliceOfficerPage = () => {
           <Typography variant="h6" mb={2}>
             My Issued Fines
           </Typography>
-          <OfficerFinesTable />
+          <OfficerFinesTable fines={fines}/>
         </Paper>
       </Box>
     </Box>

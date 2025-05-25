@@ -178,13 +178,13 @@ const DriverPage = () => {
                   </TableRow>
                 ) : (
                   fines.map((fine) => (
-                    <TableRow key={fine._id}>
-                      <TableCell>{fine.date}</TableCell>
-                      <TableCell>{fine.type}</TableCell>
-                      <TableCell>{fine.amount ? fine.amount.toFixed(2) : "N/A"}</TableCell>
-                      <TableCell>{fine.isPaid ? "Paid" : "Pending"}</TableCell>
-                      <TableCell>{fine.issueLocation}</TableCell>
-                      <TableCell>{fine.time}</TableCell>
+                    <TableRow key={fine._id}   style={{ backgroundColor: fine.isPaid ? "green" : "red"}}>
+                      <TableCell style={{color: "white"}}>{fine.date}</TableCell>
+                      <TableCell style={{color: "white"}}>{fine.type}</TableCell>
+                      <TableCell style={{color: "white"}}>{fine.amount ? fine.amount.toFixed(2) : "N/A"}</TableCell>
+                      <TableCell style={{color: "white"}}>{fine.isPaid ? "Paid" : "Pending"}</TableCell>
+                      <TableCell style={{color: "white"}}>{fine.issueLocation}</TableCell>
+                      <TableCell style={{color: "white"}}>{fine.time}</TableCell>
                     </TableRow>
                   ))
                 )}

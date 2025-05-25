@@ -7,7 +7,7 @@ import axios from 'axios';
 import { policeOfficerApi } from '../../api/policeofficerapi';
 import { useAuth } from '../../utils/AuthContext';
 
-const OfficerFinesTable = () => {
+const OfficerFinesTable = (fines) => {
   const { user } = useAuth();
   const [filteredFines, setFilteredFines] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +57,7 @@ const OfficerFinesTable = () => {
     };
 
     fetchFinesWithOffence();
-  }, [user.token]);
+  }, [user.token, fines]);
 
   if (loading) {
     return (
