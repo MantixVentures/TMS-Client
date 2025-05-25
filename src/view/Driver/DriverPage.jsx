@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const BASE_URL = "https://tms-server-rosy.vercel.app";
+const STRIPE_BASE_URL = "https://tms-strip-payment-service-ix2x.vercel.app";
 
 const DriverPage = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const DriverPage = () => {
   const [selectedType, setSelectedType] = useState("");
   const [fines, setFines] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [processingPaymentId, setProcessingPaymentId] = useState(null);
 
   const civilNIC = localStorage.getItem("nicNo") || "0088675443v";
 
@@ -76,6 +78,29 @@ const DriverPage = () => {
     navigate("/driver-login");
   };
 
+  // Handle payment for a fine
+  const handlePayFine = async (fineId) => {
+    try {
+      setProcessingPaymentId(fineId);
+      const response = await axios.post(`${STRIPE_BASE_URL}/create-checkout-session`, {
+        civilNIC,
+        fineId,
+      });
+
+      const { checkoutUrl } = response.data;
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;  // Redirect to Stripe checkout page
+      } else {
+        alert("Failed to create payment session.");
+      }
+    } catch (error) {
+      console.error("Payment session creation error:", error);
+      alert("Error initiating payment. Please try again.");
+    } finally {
+      setProcessingPaymentId(null);
+    }
+  };
+
   const totalPendingAmount = fines
     .filter((fine) => !fine.isPaid)
     .reduce((sum, fine) => sum + (fine.amount || 0), 0);
@@ -94,7 +119,7 @@ const DriverPage = () => {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="sm" sx={{ mt: 4 }}>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
         {loading ? (
           <Box textAlign="center" mt={4}>
             <CircularProgress />
@@ -167,24 +192,47 @@ const DriverPage = () => {
                   <TableCell>Status</TableCell>
                   <TableCell>Location</TableCell>
                   <TableCell>Time</TableCell>
+                  <TableCell>Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {fines.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
+                    <TableCell colSpan={7} align="center">
                       No fines to display.
                     </TableCell>
                   </TableRow>
                 ) : (
                   fines.map((fine) => (
-                    <TableRow key={fine._id}   style={{ backgroundColor: fine.isPaid ? "green" : "red"}}>
-                      <TableCell style={{color: "white"}}>{fine.date}</TableCell>
-                      <TableCell style={{color: "white"}}>{fine.type}</TableCell>
-                      <TableCell style={{color: "white"}}>{fine.amount ? fine.amount.toFixed(2) : "N/A"}</TableCell>
-                      <TableCell style={{color: "white"}}>{fine.isPaid ? "Paid" : "Pending"}</TableCell>
-                      <TableCell style={{color: "white"}}>{fine.issueLocation}</TableCell>
-                      <TableCell style={{color: "white"}}>{fine.time}</TableCell>
+                    <TableRow
+                      key={fine._id}
+                      style={{ backgroundColor: fine.isPaid ? "#2e7d32" : "#d32f2f" }}
+                    >
+                      <TableCell style={{ color: "white" }}>{fine.date}</TableCell>
+                      <TableCell style={{ color: "white" }}>{fine.type}</TableCell>
+                      <TableCell style={{ color: "white" }}>
+                        {fine.amount ? fine.amount.toFixed(2) : "N/A"}
+                      </TableCell>
+                      <TableCell style={{ color: "white" }}>
+                        {fine.isPaid ? "Paid" : "Pending"}
+                      </TableCell>
+                      <TableCell style={{ color: "white" }}>{fine.issueLocation}</TableCell>
+                      <TableCell style={{ color: "white" }}>{fine.time}</TableCell>
+                      <TableCell style={{ color: "white" }}>
+                        {!fine.isPaid ? (
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            disabled={processingPaymentId === fine._id}
+                            onClick={() => handlePayFine(fine._id)}
+                          >
+                            {processingPaymentId === fine._id ? "Processing..." : "Pay"}
+                          </Button>
+                        ) : (
+                          "-"
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
