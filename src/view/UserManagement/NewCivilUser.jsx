@@ -24,7 +24,7 @@ const NewCivilUser = () => {
     name: "",
     email: "",
     contactInfo: "",
-    nic: "",
+    idNumber: "",
     address: "",
     password: "",
     confirmPassword: "",
@@ -68,6 +68,7 @@ const NewCivilUser = () => {
     try {
       // Remove confirmPassword before sending to API
       const { confirmPassword, ...apiData } = formData;
+      //alert(JSON.stringify(apiData));
 
       const response = await axios.post(
         "https://tms-server-rosy.vercel.app/users/auth/register",
@@ -203,8 +204,8 @@ const NewCivilUser = () => {
               <TextField
                 fullWidth
                 label="NIC"
-                name="nic"
-                value={formData.nic}
+                name="idNumber"
+                value={formData.idNumber}
                 onChange={handleChange}
                 required
               />

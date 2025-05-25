@@ -1,70 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Box,
-  Typography,
-  CircularProgress
+  Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, Box, Typography, CircularProgress
 } from '@mui/material';
+import axios from 'axios';
 import { policeOfficerApi } from '../../api/policeofficerapi';
 import { useAuth } from '../../utils/AuthContext';
 
 const OfficerFinesTable = () => {
   const { user } = useAuth();
-  const [allFines, setAllFines] = useState([]);
   const [filteredFines, setFilteredFines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchAllFines = async () => {
+    const fetchFinesWithOffence = async () => {
       try {
         setLoading(true);
-        setError(null);
-        
-        // Fetch all fines
         const response = await policeOfficerApi.getAll();
-        if(response){
-          console.log(response)
-          //const data = await response.json();
-          setAllFines(response.data || []);
-        }
-        if (!response) {
-          throw new Error('Failed to fetch fines');
+
+        if (!response || !response.data || !response.data.data) {
+          throw new Error("Failed to fetch fines");
         }
 
+        const allFines = response.data.data;
+
+        const officerId = localStorage.getItem("officerid");
+        if (!officerId) {
+          setError("Officer ID not found");
+          return;
+        }
+
+        const officerFines = allFines.filter(fine => fine.policeId === officerId);
+
+        // Fetch offences for each fineManagementId
+        const finesWithOffences = await Promise.all(
+          officerFines.map(async fine => {
+            try {
+              const offenceResponse = await axios.get(`https://tms-server-rosy.vercel.app/fine/${fine.fineManagementId}`);
+              const offence = offenceResponse.data.data;
+              //alert(JSON.stringify(offence))
+              return { ...fine, offence };
+            } catch (err) {
+              console.error(`Failed to fetch offence for ID ${fine.fineManagementId}`, err);
+              return { ...fine, offence: { name: "Unknown" } };
+            }
+          })
+        );
+
+        setFilteredFines(finesWithOffences);
       } catch (err) {
-        setError(err.message);
-        console.error('Error fetching fines:', err);
+        setError(err.message || "An error occurred");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAllFines();
+    fetchFinesWithOffence();
   }, [user.token]);
-
-  useEffect(() => {
-    console.log("all",allFines.data);
-    if (allFines.data && allFines.data.length > 0) {
-      // Get officer ID from localStorage (set during login)
-      const officerId = localStorage.getItem('officerid');
-      
-      if (!officerId) {
-        setError('Officer ID not found');
-        return;
-      }
-
-      // Filter fines by officer I
-      const officerFines = allFines.data.filter(fine => fine.policeId === officerId);
-      setFilteredFines(officerFines);
-    }
-  }, [allFines]);
 
   if (loading) {
     return (
@@ -91,7 +84,7 @@ const OfficerFinesTable = () => {
   }
 
   return (
-    <Box >
+    <Box>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -99,6 +92,7 @@ const OfficerFinesTable = () => {
               <TableCell><strong>Date</strong></TableCell>
               <TableCell><strong>Civilian NIC</strong></TableCell>
               <TableCell><strong>Offence</strong></TableCell>
+              <TableCell><strong>Amount</strong></TableCell>
               <TableCell><strong>Vehicle Number</strong></TableCell>
               <TableCell><strong>Location</strong></TableCell>
               <TableCell><strong>Status</strong></TableCell>
@@ -109,7 +103,8 @@ const OfficerFinesTable = () => {
               <TableRow key={index}>
                 <TableCell>{new Date(fine.date).toLocaleDateString()}</TableCell>
                 <TableCell>{fine.civilNIC}</TableCell>
-                <TableCell>{fine.offence}</TableCell>
+                <TableCell>{fine.offence?.offence || "N/A"}</TableCell>
+                <TableCell>{fine.offence?.fine || "0"}</TableCell>
                 <TableCell>{fine.vehicalNumber}</TableCell>
                 <TableCell>{fine.issueLocation}</TableCell>
                 <TableCell

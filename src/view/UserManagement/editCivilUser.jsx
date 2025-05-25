@@ -25,7 +25,7 @@ const EditCivilUser = () => {
     name: "",
     email: "",
     contactInfo: "",
-    nic: "",
+    idNumber: "",
     address: "",
     password: "",
   });
@@ -33,11 +33,15 @@ const EditCivilUser = () => {
   useEffect(() => {
     const fetchCivilUserData = async () => {
       try {
-        const response = await axios.get(`https://tms-server-rosy.vercel.app/users/getall`);
-        const allUsers = response.data.user.newUser;
+        const response = await axios.get(`https://tms-server-rosy.vercel.app/users/`);
+        //alert(JSON.stringify(response.data))
+        const allUsers = response.data.data;
 
         // Find the user with matching ID
         const userData = allUsers.find((user) => user._id === id);
+
+        //alert(JSON.stringify(response))
+        //const userData = response.data
 
         if (!userData) {
           setError("User not found");
@@ -49,7 +53,7 @@ const EditCivilUser = () => {
           name: userData.name || "",
           email: userData.email || "",
           contactInfo: userData.contactInfo || "",
-          nic: userData.nic || "",
+          idNumber: userData.idNumber || "",
           address: userData.address || "",
           password: "",
         });
@@ -84,7 +88,7 @@ const EditCivilUser = () => {
         delete submitData.password;
       }
 
-      await axios.put(`https://tms-server-rosy.vercel.app/users/edit/${id}`, submitData);
+      await axios.put(`https://tms-server-rosy.vercel.app/users/${id}`, submitData);
       setSuccess("Civil user updated successfully!");
       // Navigate after 2 seconds
       setTimeout(() => {
@@ -204,8 +208,8 @@ const EditCivilUser = () => {
               <TextField
                 fullWidth
                 label="NIC"
-                name="nic"
-                value={formData.nic}
+                name="idNumber"
+                value={formData.idNumber}
                 onChange={handleChange}
                 required
               />

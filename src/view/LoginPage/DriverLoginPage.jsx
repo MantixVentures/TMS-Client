@@ -77,6 +77,7 @@ const DriverLoginPage = () => {
         localStorage.setItem("token", token);
         localStorage.setItem("isAdmin", JSON.stringify(false));
         localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("nicNo", response.data.user.nicNo);
         login(response.data.user);
         navigate("/driver-dashboard", { replace: true });
       } else {

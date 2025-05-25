@@ -129,7 +129,7 @@ const IssueFineModal = ({ onClose, onSubmit, policeId }) => {
 
   const handleSubmit = async () => {
     // Validate NIC format (9 digits + V/X)
-    const nicRegex = /^[0-9]{9}[VvXx]$/;
+    const nicRegex = /^([0-9]{9}[VvXx]|[0-9]{12})$/;
     if (!nicRegex.test(formData.civilNIC)) {
       setError('Invalid NIC format. Use 123456789V format');
       return;
